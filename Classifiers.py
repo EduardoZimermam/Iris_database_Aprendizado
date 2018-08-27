@@ -9,6 +9,27 @@ from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 from sklearn.model_selection import cross_val_score
 
+def crossValKNN(range_k, X_data, y_target):
+	scores = []
+
+	for k in range_k:
+		neigh = KNeighborsClassifier(k)
+		neigh.fit(X, y)
+		scores.append(cross_val_score(neigh, X, y, cv=5).mean())
+
+	return scores
+
+def splitKNN(range_k, X_data, y_target):
+	scores = []
+
+	for k in range_k:
+		neigh = KNeighborsClassifier(k)
+		X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=0)
+		neigh.fit(X_train, y_train)
+		scores.append(accuracy_score(y_test, neigh.predict(X_test)))
+
+	return scores
+
 # Load do dataset
 iris = datasets.load_iris()
 
@@ -17,28 +38,19 @@ X = iris.data
 y = iris.target
 
 range_k = range(1, 30)
-scores=[]
+splitKNNScores = []
+crossValScores = []
 
-for k in range_k:
-	neigh = KNeighborsClassifier(k)
-	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=0)
-	neigh.fit(X_train, y_train)
-	scores.append(accuracy_score(y_test, neigh.predict(X_test)))
+splitKNNScores = splitKNN(range_k, X, y)
+crossValScores = crossValKNN(range_k, X, y)
 
-plt.plot(range_k, scores)
+plt.plot(range_k, splitKNNScores)
 plt.xlabel('K')
 plt.ylabel('Acuracia')
 plt.title('Usando 60% para treinamento e 40% para')
 plt.show()
 
-scores = []
-
-for k in range_k:
-	neigh = KNeighborsClassifier(k)
-	neigh.fit(X, y)
-	scores.append(cross_val_score(neigh, X, y, cv=5).mean())
-
-plt.plot(range_k, scores)
+plt.plot(range_k, crossValScores)
 plt.xlabel('K')
 plt.ylabel('Acuracia')
 plt.title('Usando 5 folds')
